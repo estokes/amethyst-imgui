@@ -5,11 +5,11 @@ extern crate glsl_layout;
 extern crate imgui_gfx_renderer;
 
 use amethyst::{
+        error::Error,
 	ecs::shred::FetchMut,
 	ecs::prelude::*,
-	core::nalgebra::{Vector2, Vector3},
+	core::math::{Vector2, Vector3},
 	renderer::{
-		error::Result,
 		pipe::{
 			pass::{Pass, PassData},
 			Effect,
@@ -69,7 +69,7 @@ impl<'a> PassData<'a> for DrawUi {
 }
 
 impl Pass for DrawUi {
-	fn compile(&mut self, mut effect: NewEffect<'_>) -> Result<Effect> {
+	fn compile(&mut self, mut effect: NewEffect<'_>) -> Result<Effect, Error> {
 		let mut imgui = ImGui::init();
 		{
 			// Fix incorrect colors with sRGB framebuffer
