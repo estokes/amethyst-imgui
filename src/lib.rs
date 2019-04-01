@@ -6,7 +6,6 @@ extern crate imgui_gfx_renderer;
 
 use amethyst::{
         error::Error,
-	ecs::shred::FetchMut,
 	ecs::prelude::*,
 	core::math::{Vector2, Vector3},
 	renderer::{
@@ -88,7 +87,7 @@ impl Pass for DrawUi {
 		}
 		imgui.set_ini_filename(None);
 
-		let font_size = 13.;
+		let font_size = 18.;
 
 		let _ = imgui.fonts().add_font_with_config(
 			include_bytes!("../mplus-1p-regular.ttf"),
@@ -288,30 +287,25 @@ pub fn close_frame(ui: &imgui::Ui) {
 	};
 }
 
-pub fn handle_imgui_events(world: &amethyst::ecs::World, event: &amethyst::renderer::Event) {
+pub fn handle_imgui_events(world: &mut amethyst::prelude::World, event: &amethyst::renderer::Event) {
 	use amethyst::{
 		renderer::{
 			ElementState,
 			Event,
 			MouseButton,
 			VirtualKeyCode as VK,
-			WindowEvent::{self, ReceivedCharacter},
+		        WindowEvent::{self, ReceivedCharacter},
+                        ScreenDimensions,
 		},
 		winit::{MouseScrollDelta, TouchPhase},
 	};
-
-	let resources = std::borrow::Borrow::<amethyst::ecs::Resources>::borrow(world);
-
-	let mut imgui_state: Option<FetchMut<'_, Option<ImguiState>>> = resources.try_fetch_mut::<Option<ImguiState>>();
-	let imgui_state: &mut Option<ImguiState> = match imgui_state {
-		Some(ref mut x) => x,
-		_ => return,
-	};
-	let imgui_state: &mut ImguiState = match imgui_state {
-		Some(ref mut x) => x,
-		_ => return,
-	};
-
+        
+        let hidpi = world.read_resource::<ScreenDimensions>().hidpi_factor();
+        let mut imgui_state = world.write_resource::<Option<ImguiState>>();
+        let imgui_state = match imgui_state.as_mut() {
+                Some(x) => x,
+                None => return
+        };
 	let imgui = &mut imgui_state.imgui;
 	let mouse_state = &mut imgui_state.mouse_state;
 
@@ -347,7 +341,7 @@ pub fn handle_imgui_events(world: &amethyst::ecs::World, event: &amethyst::rende
 				}
 			},
 			WindowEvent::CursorMoved { position: pos, .. } => {
-				mouse_state.pos = (pos.x as i32, pos.y as i32);
+				mouse_state.pos = ((pos.x * hidpi) as i32, (pos.y * hidpi) as i32);
 			},
 			WindowEvent::MouseInput { state, button, .. } => match button {
 				MouseButton::Left => mouse_state.pressed.0 = *state == ElementState::Pressed,
@@ -364,8 +358,8 @@ pub fn handle_imgui_events(world: &amethyst::ecs::World, event: &amethyst::rende
 		}
 	}
 
-	imgui.set_mouse_pos(mouse_state.pos.0 as f32, mouse_state.pos.1 as f32);
-	imgui.set_mouse_down([mouse_state.pressed.0, mouse_state.pressed.1, mouse_state.pressed.2, false, false]);
+	imgui.set_mouse_pos(dbg!(mouse_state.pos.0 as f32), dbg!(mouse_state.pos.1 as f32));
+	imgui.set_mouse_down(dbg!([mouse_state.pressed.0, mouse_state.pressed.1, mouse_state.pressed.2, false, false]));
 	imgui.set_mouse_wheel(mouse_state.wheel);
 	mouse_state.wheel = 0.0;
 }

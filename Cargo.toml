@@ -14,5 +14,5 @@ glsl-layout = "0.1"
 shred-derive = "0.5"
 shred = "0.7"
 glium = { version = "0.22", default-features = true }
-imgui = "0.0.21"
-imgui-gfx-renderer = "0.0.21"
+imgui = "0.0.22"
+imgui-gfx-renderer = "0.0.22"
